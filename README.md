@@ -1,4 +1,4 @@
-# 🛡️ CognitiveShield v2
+# 🛡️ CognitiveShield 
 ### ML-Driven Social Engineering Defense Trainer | Purple Team Edition
 
 ---

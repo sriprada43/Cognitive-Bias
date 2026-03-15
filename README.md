@@ -108,7 +108,7 @@ This project can be used for:
 - Expand the cognitive bias dataset
 
 
-## 📚 Key References
+##  Key References
 
 1. "Exploring Heuristics and Biases in Cybersecurity" - MDPI Systems (2025)
 2. "Classification of Manipulation Techniques in SE Attacks" - HAL / Thcon25 (2025)

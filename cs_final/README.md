@@ -77,11 +77,6 @@ ollama serve
 # 4. CognitiveShield auto-detects it at localhost:11434
 ```
 
----
-
-## 🎓 Viva Statement
-
-*"CognitiveShield models social engineering exploitability at the human level — mapping attack messages to cognitive bias categories using NLP, tracking individual vulnerability profiles with machine learning, simulating attacker behavior mapped to MITRE ATT&CK, and delivering adaptive defense training. A live detection module analyzes arbitrary text in real time, and an optional local SLM integration enables fully offline semantic analysis."*
 
 ---
 

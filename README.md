@@ -1,6 +1,8 @@
 # 🛡️ CognitiveShield 
 ### ML-Driven Social Engineering Defense Trainer | Purple Team Edition
 
+This system models how social engineers exploit cognitive biases in humans, simulates realistic attack scenarios, tracks individual vulnerability profiles using ML, and delivers adaptive defense training, addressing the human factor as the primary cybersecurity attack surface.
+
 ---
 
 ## ⚡ Quick Start
@@ -13,11 +15,11 @@ python app.py
 
 ---
 
-## 🆕 What's New in v2
+## 🆕 What's in it
 
 | Feature | Description |
 |---------|-------------|
-| 🔬 **Detection Module** | Paste any text — NLP classifier identifies bias tactic + risk score + MITRE mapping |
+| 🔬 **Detection Module** | Paste any text - NLP classifier identifies bias tactic + risk score + MITRE mapping |
 | 📥 **PDF Export** | Download a full professional threat intelligence report as PDF |
 | 🧠 **Ollama Support** | Optional local SLM (Mistral/Phi-3) for offline semantic analysis |
 | 🎨 **Improved UI** | JetBrains Mono + Syne fonts, radar chart, better layouts |
@@ -27,12 +29,20 @@ python app.py
 
 ## 🧠 Core Features
 
-- **CLI Trainer** (`python cli.py`) — terminal training with adaptive difficulty
-- **Flask Dashboard** — web UI with bias heatmaps, radar chart, session history
-- **NLP Classifier** — TF-IDF + Logistic Regression, auto-trained on boot
-- **ML Profiler** — exploitability score, attack surface mapping, per-bias vulnerability
-- **Adaptive Engine** — targets your weakest bias, increases difficulty over sessions
-- **MITRE ATT&CK** — every bias maps to a real technique ID
+- **CLI Trainer** (`python cli.py`) - terminal training with adaptive difficulty
+- **Flask Dashboard** - web UI with bias heatmaps, radar chart, session history
+- **NLP Classifier** - TF-IDF + Logistic Regression, auto-trained on boot
+- **ML Profiler** - exploitability score, attack surface mapping, per-bias vulnerability
+- **Adaptive Engine** - targets your weakest bias, increases difficulty over sessions
+- **MITRE ATT&CK** - every bias maps to a real technique ID
+
+---
+
+## Technologies Used
+- Python
+- Cybersecurity concepts
+- Behavioral analysis
+- Data processing techniques
 
 ---
 
@@ -79,11 +89,29 @@ ollama serve
 
 
 ---
+## Use Case
+
+This project can be used for:
+
+- Cybersecurity awareness training
+- Research on social engineering
+- Demonstrating human vulnerabilities in security
+- Educational purposes in cybersecurity courses
+
+---
+
+## Future Improvements
+
+- Add more social engineering scenarios
+- Integrate machine learning for behavioral prediction
+- Develop a user interface for easier interaction
+- Expand the cognitive bias dataset
+
 
 ## 📚 Key References
 
-1. "Exploring Heuristics and Biases in Cybersecurity" — MDPI Systems (2025)
-2. "Classification of Manipulation Techniques in SE Attacks" — HAL / Thcon25 (2025)
-3. "Human Vulnerabilities in Cybersecurity + AI/ML Countermeasures" — JST (2024)
-4. "Cognitive Biases in Cyber Attacker Decision Making" — IEEE EuroS&PW (2025)
-5. MITRE ATT&CK Framework — https://attack.mitre.org
+1. "Exploring Heuristics and Biases in Cybersecurity" - MDPI Systems (2025)
+2. "Classification of Manipulation Techniques in SE Attacks" - HAL / Thcon25 (2025)
+3. "Human Vulnerabilities in Cybersecurity + AI/ML Countermeasures" - JST (2024)
+4. "Cognitive Biases in Cyber Attacker Decision Making" - IEEE EuroS&PW (2025)
+5. MITRE ATT&CK Framework - https://attack.mitre.org

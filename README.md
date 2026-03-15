@@ -5,7 +5,7 @@ This system models how social engineers exploit cognitive biases in humans, simu
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
 pip install -r requirements.txt
@@ -15,19 +15,19 @@ python app.py
 
 ---
 
-## 🆕 What's in it
+## What's in it
 
 | Feature | Description |
 |---------|-------------|
-| 🔬 **Detection Module** | Paste any text - NLP classifier identifies bias tactic + risk score + MITRE mapping |
-| 📥 **PDF Export** | Download a full professional threat intelligence report as PDF |
-| 🧠 **Ollama Support** | Optional local SLM (Mistral/Phi-3) for offline semantic analysis |
-| 🎨 **Improved UI** | JetBrains Mono + Syne fonts, radar chart, better layouts |
-| ⚙️ **Settings Page** | Retrain classifier, check integrations, view setup instructions |
+|  **Detection Module** | Paste any text - NLP classifier identifies bias tactic + risk score + MITRE mapping |
+|  **PDF Export** | Download a full professional threat intelligence report as PDF |
+|  **Ollama Support** | Optional local SLM (Mistral/Phi-3) for offline semantic analysis |
+|  **Improved UI** | JetBrains Mono + Syne fonts, radar chart, better layouts |
+|  **Settings Page** | Retrain classifier, check integrations, view setup instructions |
 
 ---
 
-## 🧠 Core Features
+## Core Features
 
 - **CLI Trainer** (`python cli.py`) - terminal training with adaptive difficulty
 - **Flask Dashboard** - web UI with bias heatmaps, radar chart, session history
@@ -46,7 +46,7 @@ python app.py
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 cognitiveshield/
@@ -71,7 +71,7 @@ cognitiveshield/
 
 ---
 
-## 🔬 Ollama Local SLM Setup (Optional)
+## Ollama Local SLM Setup (Optional)
 
 ```bash
 # 1. Install Ollama

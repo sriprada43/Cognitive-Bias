@@ -1,0 +1,94 @@
+{% extends "base.html" %}{% block title %}Report — CognitiveShield{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header flex-center" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div>
+      <div class="page-title">📋 Threat Intelligence Report</div>
+      <div class="page-sub">{{ username }} · {{ report.risk_icon }} {{ report.risk_label }} · Exploitability {{ report.exploitability|int }}%</div>
+    </div>
+    <a href="{{ url_for('download_pdf') }}" class="btn btn-primary">📥 Download PDF</a>
+  </div>
+
+  <!-- Executive summary -->
+  <div class="card mb-16" style="border-color:var(--yellow)">
+    <div class="card-title"><span>📌</span> EXECUTIVE SUMMARY</div>
+    <div class="grid-3">
+      <div><div class="text-muted" style="font-size:9px">EXPLOITABILITY</div>
+        <div style="font-size:2rem;font-weight:800;font-family:var(--display);
+          color:{% if report.exploitability>=70 %}var(--red){% elif report.exploitability>=40 %}var(--yellow){% else %}var(--green){% endif %}">
+          {{ report.exploitability|int }}%</div></div>
+      <div><div class="text-muted" style="font-size:9px">SESSIONS</div>
+        <div style="font-size:2rem;font-weight:800;font-family:var(--display);color:var(--cyan)">{{ report.stats.sessions }}</div></div>
+      <div><div class="text-muted" style="font-size:9px">SCENARIOS</div>
+        <div style="font-size:2rem;font-weight:800;font-family:var(--display);color:var(--cyan)">{{ report.stats.total_scenarios }}</div></div>
+    </div>
+  </div>
+
+  <!-- Attacker simulations -->
+  {% if report.simulations %}
+  <div class="card mb-16" style="border-color:var(--red)">
+    <div class="card-title"><span>🎭</span> ATTACKER SIMULATION</div>
+    {% for sim in report.simulations %}
+    <div style="padding:14px;background:rgba(255,71,87,.04);border-radius:8px;margin-bottom:12px;border:1px solid rgba(255,71,87,.12)">
+      <div class="flex-center gap-8 mb-8" style="flex-wrap:wrap">
+        <span style="font-size:1.1rem">{{ bias_icons.get(sim.bias,'') }}</span>
+        <strong class="text-yellow">{{ sim.bias.replace('_',' ').upper() }}</strong>
+        <span class="badge badge-red">{{ sim.vulnerability|int }}% vulnerable</span>
+        <span class="badge badge-cyan">{{ sim.mitre_id }}</span>
+      </div>
+      <div class="grid-2" style="font-size:11px;gap:10px;margin-bottom:8px">
+        <div><span class="text-muted">Observes: </span>{{ sim.obs }}</div>
+        <div><span class="text-muted">Attack: </span>{{ sim.attack }}</div>
+      </div>
+      <div style="font-size:11px;margin-bottom:6px">
+        <span class="text-muted">Vectors: </span>
+        {% for v in sim.vectors %}<span class="keyword-tag" style="background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.2);display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;margin:2px">{{ v }}</span>{% endfor %}
+      </div>
+      <div class="alert alert-danger" style="margin-bottom:0"><strong>Outcome:</strong> {{ sim.outcome }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- MITRE table -->
+  <div class="card mb-16">
+    <div class="card-title"><span>🗺️</span> MITRE ATT&CK MAPPING</div>
+    {% set mitre = {'authority':('Spear Phishing via Service','T1566.003'),'urgency':('Spear Phishing Link','T1566.002'),
+      'fear':('Phishing for Information','T1598'),'familiarity':('Impersonation','T1656'),
+      'social_proof':('Trusted Relationship','T1199'),'scarcity':('Spear Phishing Attachment','T1566.001'),
+      'reciprocity':('Establish Accounts','T1585')} %}
+    <table class="data-table">
+      <thead><tr><th>Bias</th><th>Technique</th><th>ID</th><th>Exposure</th></tr></thead>
+      <tbody>
+        {% for bias,(tname,tid) in mitre.items() %}
+        {% set v = report.bias_scores.get(bias,{}).get('vulnerability',0) %}
+        <tr>
+          <td>{{ bias_icons.get(bias,'') }} {{ bias.replace('_',' ').title() }}</td>
+          <td>{{ tname }}</td>
+          <td><span class="badge badge-cyan">{{ tid }}</span></td>
+          <td class="{% if v>=70 %}text-red{% elif v>=40 %}text-yellow{% else %}text-green{% endif %} fw-bold">{{ v|int }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recommendations -->
+  {% if report.recommendations %}
+  <div class="card mb-16" style="border-color:var(--green)">
+    <div class="card-title"><span>🛡️</span> REMEDIATION RECOMMENDATIONS</div>
+    {% for bias, rec in report.recommendations %}
+    <div style="padding:10px;border-bottom:1px solid var(--border)">
+      <strong>{{ bias_icons.get(bias,'') }} {{ bias.replace('_',' ').title() }}</strong><br>
+      <span style="font-size:11px;color:var(--white)">{{ rec }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="flex gap-8">
+    <a href="{{ url_for('download_pdf') }}" class="btn btn-primary">📥 Download PDF Report</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">← Dashboard</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block content %}
+<div class="container" style="max-width:640px">
+  <div style="text-align:center;margin:28px 0 20px">
+    {% if fell %}<div style="font-size:3rem">⚠️</div><h2 class="text-red mt-8">You fell for it</h2>
+    {% else %}<div style="font-size:3rem">✅</div><h2 class="text-green mt-8">You resisted!</h2>{% endif %}
+  </div>
+  <div class="card">
+    <div class="card-title"><span>🔍</span> ATTACK ANALYSIS</div>
+    <div class="mb-8">
+      <span class="text-muted" style="font-size:10px">BIAS EXPLOITED</span><br>
+      <span style="font-size:1.1rem;font-weight:700;color:var(--yellow)">
+        {{ bias_icons.get(scenario.bias_type,'⚠️') }} {{ scenario.bias_type.replace('_',' ').upper() if scenario.bias_type else 'UNKNOWN' }}
+      </span>
+    </div>
+    <div class="alert alert-info mb-8"><strong>Tactic:</strong> {{ scenario.tactic_explanation }}</div>
+    <div class="alert alert-success"><strong>💡 Defense tip:</strong> {{ scenario.defense_tip }}</div>
+    <div class="mt-8 text-muted" style="font-size:10px">⏱ Response time: {{ scenario.rt }}s</div>
+  </div>
+  <div style="text-align:center;margin-top:16px">
+    {% if is_last %}<a href="{{ url_for('train_summary') }}" class="btn btn-primary">View Session Summary →</a>
+    {% else %}<a href="{{ url_for('train_scenario') }}" class="btn btn-primary">Next Scenario →</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

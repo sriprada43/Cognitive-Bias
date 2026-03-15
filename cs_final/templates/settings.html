@@ -1,0 +1,86 @@
+{% extends "base.html" %}{% block title %}Settings — CognitiveShield{% endblock %}
+{% block content %}
+<div class="container" style="max-width:680px">
+  <div class="page-header">
+    <div class="page-title">⚙️ Settings</div>
+    <div class="page-sub">System configuration and integrations</div>
+  </div>
+
+  <div class="card mb-16">
+    <div class="card-title"><span>🤖</span> NLP CLASSIFIER</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px">
+      TF-IDF + Logistic Regression model trained on the bias_messages.csv dataset.
+      Retrain if you add new scenarios to the dataset.
+    </p>
+    <button class="btn btn-outline" id="retrainBtn" onclick="retrain()">🔄 Retrain Classifier</button>
+    <div id="retrainResult" class="mt-8" style="font-size:11px"></div>
+  </div>
+
+  <div class="card mb-16">
+    <div class="card-title"><span>🧠</span> OLLAMA LOCAL SLM</div>
+    {% if has_ollama %}
+    <div class="alert alert-success mb-8">🟢 Ollama is running — local SLM analysis is available.</div>
+    <p style="font-size:11px;color:var(--muted)">
+      Ollama provides richer semantic analysis in the Detect module. Make sure a model is pulled
+      (e.g. <code style="color:var(--cyan)">ollama pull mistral</code>).
+    </p>
+    {% else %}
+    <div class="alert alert-warning mb-8">🟡 Ollama not detected — running on localhost:11434.</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:10px">
+      Install Ollama to enable local SLM analysis — fully offline, no API needed.
+    </p>
+    <div class="card" style="background:var(--bg);padding:12px">
+      <code style="font-size:11px;color:var(--cyan)">
+        # Install Ollama<br>
+        curl -fsSL https://ollama.com/install.sh | sh<br><br>
+        # Pull a model<br>
+        ollama pull mistral<br><br>
+        # Start server (usually auto-starts)<br>
+        ollama serve
+      </code>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card mb-16">
+    <div class="card-title"><span>📥</span> PDF REPORTS</div>
+    {% if has_reportlab %}
+    <div class="alert alert-success mb-8">🟢 reportlab is installed — PDF export is available.</div>
+    {% else %}
+    <div class="alert alert-warning mb-8">🟡 reportlab not installed.</div>
+    <div class="card" style="background:var(--bg);padding:12px">
+      <code style="font-size:11px;color:var(--cyan)">pip install reportlab</code>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>📋</span> REQUIREMENTS</div>
+    <div class="card" style="background:var(--bg);padding:14px">
+      <code style="font-size:11px;color:var(--cyan);line-height:2">
+        pip install flask pandas scikit-learn matplotlib numpy reportlab<br>
+        # Optional: pip install ollama (or install Ollama app)
+      </code>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function retrain(){
+  const btn=document.getElementById('retrainBtn');
+  const res=document.getElementById('retrainResult');
+  btn.disabled=true; btn.textContent='⚙️ Training...';
+  res.innerHTML='<span class="text-muted">Training classifier...</span>';
+  fetch('/settings/retrain',{method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      res.innerHTML=`<span class="text-green">✅ Done — CV Accuracy: ${d.accuracy}%</span>`;
+      btn.disabled=false; btn.textContent='🔄 Retrain Classifier';
+    }).catch(()=>{
+      res.innerHTML='<span class="text-red">Error retraining</span>';
+      btn.disabled=false; btn.textContent='🔄 Retrain Classifier';
+    });
+}
+</script>
+{% endblock %}

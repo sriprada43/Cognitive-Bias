@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Training — CognitiveShield{% endblock %}
+{% block extra_style %}
+<style>
+.msg-box{background:#0d1117;border:1px solid var(--red);border-radius:8px;padding:18px;
+  font-size:13px;line-height:1.8;color:#c8d8e8;position:relative;margin:12px 0}
+.msg-box::before{content:'⚠ INCOMING MESSAGE';position:absolute;top:-10px;left:14px;
+  background:var(--bg);padding:0 8px;color:var(--red);font-size:9px;letter-spacing:2px}
+.choice-btn{width:100%;padding:12px 16px;margin-bottom:8px;background:var(--card);
+  border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);
+  font-size:11px;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;gap:10px}
+.choice-btn:hover{border-color:var(--cyan);background:rgba(0,212,255,.06)}
+.choice-btn.danger:hover{border-color:var(--red);background:rgba(255,71,87,.06)}
+.cnum{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
+.cnum-r{background:rgba(255,71,87,.2);color:var(--red)}
+.cnum-g{background:rgba(0,255,136,.2);color:var(--green)}
+.timer-bar{height:3px;background:var(--cyan);border-radius:2px;transition:width 1s linear}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container" style="max-width:680px">
+  <div style="margin:16px 0 10px;display:flex;align-items:center;justify-content:space-between">
+    <span class="text-muted" style="font-size:10px">SCENARIO {{ index }} OF {{ total }}</span>
+    <span class="badge badge-{% if scenario.difficulty=='easy' %}green{% elif scenario.difficulty=='medium' %}yellow{% else %}red{% endif %}">{{ scenario.difficulty.upper() }}</span>
+  </div>
+  <div class="prog-wrap h-2 mb-16">
+    <div class="prog-fill h-2 fill-cyan" style="width:{{ ((index-1)/total*100)|int }}%"></div>
+  </div>
+  <div id="timerBar" class="timer-bar mb-16"></div>
+
+  <div style="font-size:10px;color:var(--muted);margin-bottom:4px">
+    {{ channel_icons.get(scenario.channel,'📨') }} {{ scenario.channel.replace('_',' ').upper() }} MESSAGE
+  </div>
+
+  <div class="msg-box">{{ scenario.message_text }}</div>
+
+  <form method="POST" id="rf">
+    <input type="hidden" name="rt" id="rtF" value="5">
+    <p class="text-muted" style="font-size:10px;margin-bottom:10px">🤔 What do you do?</p>
+    <button type="submit" name="choice" value="1" class="choice-btn danger">
+      <span class="cnum cnum-r">1</span>Comply — click the link / provide the information
+    </button>
+    <button type="submit" name="choice" value="2" class="choice-btn">
+      <span class="cnum cnum-g">2</span>Verify through official channels first
+    </button>
+    <button type="submit" name="choice" value="3" class="choice-btn">
+      <span class="cnum cnum-g">3</span>Ignore / Delete the message
+    </button>
+    <button type="submit" name="choice" value="4" class="choice-btn">
+      <span class="cnum cnum-g">4</span>Report as suspicious to security team
+    </button>
+  </form>
+</div>
+<script>
+const t0=Date.now(),MAX=60,bar=document.getElementById('timerBar'),rtF=document.getElementById('rtF');
+const iv=setInterval(()=>{const e=(Date.now()-t0)/1000,p=Math.max(0,100-e/MAX*100);
+  bar.style.width=p+'%';if(e>MAX){clearInterval(iv);bar.style.background='var(--red)'}},500);
+document.querySelectorAll('.choice-btn').forEach(b=>b.addEventListener('click',()=>{
+  rtF.value=((Date.now()-t0)/1000).toFixed(2)}));
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% block content %}
+<div class="container" style="max-width:680px">
+  <div style="text-align:center;margin:28px 0 20px">
+    <div style="font-size:3rem">{% if summary.grade in ['A','B'] %}🏆{% elif summary.grade=='C' %}🎯{% else %}⚠️{% endif %}</div>
+    <h2 style="margin-top:8px;color:{% if summary.grade in ['A','B'] %}var(--green){% elif summary.grade=='C' %}var(--yellow){% else %}var(--red){% endif %}">
+      Grade {{ summary.grade }} — {{ summary.score }}%</h2>
+    <p class="text-muted mt-4" style="font-size:11px">Resisted {{ summary.correct }} / {{ summary.total }} attacks</p>
+  </div>
+  <div class="grid-2 mb-16">
+    <div class="stat-card"><div class="stat-num text-green">{{ summary.correct }}</div><div class="stat-label">Resisted</div></div>
+    <div class="stat-card"><div class="stat-num text-red">{{ summary.fell }}</div><div class="stat-label">Fell For</div></div>
+  </div>
+  {% if summary.bias_performance %}
+  <div class="card mb-16">
+    <div class="card-title"><span>📊</span> Bias Breakdown</div>
+    {% for bias, perf in summary.bias_performance.items() %}
+    {% set pct = (perf.fell/perf.total*100)|int if perf.total>0 else 0 %}
+    <div class="bias-row">
+      <div class="bias-label">{{ bias_icons.get(bias,'•') }} {{ bias.replace('_',' ').title() }}</div>
+      <div class="bias-bar"><div class="prog-wrap h-3"><div class="prog-fill h-3 {% if pct>=70 %}fill-red{% elif pct>=40 %}fill-yellow{% else %}fill-green{% endif %}" style="width:{{ pct }}%"></div></div></div>
+      <div class="bias-pct {% if pct>=70 %}text-red{% elif pct>=40 %}text-yellow{% else %}text-green{% endif %}">{{ perf.fell }}/{{ perf.total }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if summary.worst_bias %}
+  <div class="alert alert-danger mb-16">⚠️ Most vulnerable to: <strong>{{ summary.worst_bias.replace('_',' ').upper() }}</strong> — this bias will be prioritized in your next session.</div>
+  {% endif %}
+  {% if tips %}
+  <div class="card mb-16">
+    <div class="card-title"><span>💡</span> Personalized Defense Tips</div>
+    {% for tip in tips %}
+    <div class="alert alert-warning mb-8"><strong>{{ bias_icons.get(tip.bias,'') }} {{ tip.bias.replace('_',' ').title() }}</strong><br><span style="color:var(--white)">{{ tip.tip }}</span></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="flex gap-8" style="flex-wrap:wrap">
+    <a href="{{ url_for('train_session') }}" class="btn btn-primary">🔄 Train Again</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">📊 Dashboard</a>
+    <a href="{{ url_for('threat_report') }}" class="btn btn-ghost">📋 Threat Report</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}CognitiveShield{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#080c14;--surface:#0d1320;--card:#111827;--border:#1a2535;--border2:#243044;
+  --cyan:#00d4ff;--cyan2:#00aabf;--red:#ff4757;--green:#00ff88;--yellow:#ffd32a;
+  --purple:#b388ff;--white:#e8f0fe;--muted:#5a7090;--muted2:#3a5070;
+  --font:'JetBrains Mono',monospace;--display:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--white);font-family:var(--font);font-size:13px}
+a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* NAV */
+.navbar{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--display);font-size:16px;font-weight:800;color:var(--cyan);letter-spacing:1px}
+.nav-logo span{color:var(--red)}
+.nav-links{display:flex;gap:4px}
+.nav-link{padding:6px 12px;border-radius:6px;font-size:11px;color:var(--muted);transition:all .15s;
+  display:flex;align-items:center;gap:5px}
+.nav-link:hover{color:var(--white);background:rgba(255,255,255,.05);text-decoration:none}
+.nav-link.active{color:var(--cyan);background:rgba(0,212,255,.08)}
+.nav-user{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+.nav-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--cyan2),var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg)}
+
+/* LAYOUT */
+.container{max-width:1080px;margin:0 auto;padding:24px 16px}
+.page-header{margin-bottom:20px}
+.page-title{font-family:var(--display);font-size:20px;font-weight:800;color:var(--white)}
+.page-sub{color:var(--muted);font-size:11px;margin-top:4px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px}
+.card-title{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
+  font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.card-title span{color:var(--cyan)}
+
+/* GRIDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:700px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+
+/* STAT CARDS */
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:16px;text-align:center}
+.stat-num{font-family:var(--display);font-size:2rem;font-weight:800;line-height:1}
+.stat-label{color:var(--muted);font-size:10px;margin-top:6px;letter-spacing:1px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:6px;
+  font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;border:none;
+  transition:all .2s;letter-spacing:.5px}
+.btn-primary{background:var(--cyan);color:var(--bg)}
+.btn-primary:hover{background:#33eeff;text-decoration:none;color:var(--bg)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-success{background:var(--green);color:var(--bg)}
+.btn-outline{background:transparent;color:var(--cyan);border:1px solid var(--cyan)}
+.btn-outline:hover{background:var(--cyan);color:var(--bg);text-decoration:none}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--white);border-color:var(--white)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm{padding:5px 12px;font-size:10px}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-red   {background:rgba(255,71,87,.15);color:var(--red)}
+.badge-yellow{background:rgba(255,211,42,.15);color:var(--yellow)}
+.badge-green {background:rgba(0,255,136,.15);color:var(--green)}
+.badge-cyan  {background:rgba(0,212,255,.15);color:var(--cyan)}
+.badge-purple{background:rgba(179,136,255,.15);color:var(--purple)}
+
+/* PROGRESS */
+.prog-wrap{background:var(--border);border-radius:4px;overflow:hidden}
+.prog-fill{border-radius:4px;transition:width .5s}
+.h-2{height:4px}.h-3{height:6px}.h-4{height:8px}
+.fill-red{background:var(--red)}.fill-yellow{background:var(--yellow)}
+.fill-green{background:var(--green)}.fill-cyan{background:var(--cyan)}
+
+/* BIAS ROWS */
+.bias-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;margin-bottom:8px;
+  background:rgba(255,255,255,.02);transition:background .15s}
+.bias-row:hover{background:rgba(255,255,255,.05)}
+.bias-label{width:140px;font-size:11px;flex-shrink:0}
+.bias-bar{flex:1}
+.bias-pct{width:40px;text-align:right;font-size:11px;font-weight:600}
+
+/* ALERTS */
+.alert{padding:10px 14px;border-radius:6px;margin-bottom:10px;font-size:11px;line-height:1.6}
+.alert-danger {background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.25);color:#ff8a9a}
+.alert-success{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);color:#66ffaa}
+.alert-info   {background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.25);color:#66eeff}
+.alert-warning{background:rgba(255,211,42,.08);border:1px solid rgba(255,211,42,.25);color:#ffe066}
+
+/* FORMS */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:10px;color:var(--muted);letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:6px}
+.form-input,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border2);
+  color:var(--white);padding:10px 14px;border-radius:6px;font-family:var(--font);
+  font-size:12px;outline:none;transition:border-color .2s}
+.form-input:focus,.form-textarea:focus{border-color:var(--cyan)}
+.form-textarea{resize:vertical;min-height:120px}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:11px}
+.data-table th{padding:8px 12px;text-align:left;color:var(--muted);font-size:10px;
+  letter-spacing:1px;border-bottom:1px solid var(--border)}
+.data-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--white)}
+.data-table tr:hover td{background:rgba(255,255,255,.03)}
+
+/* UTILS */
+.text-red{color:var(--red)}.text-green{color:var(--green)}.text-yellow{color:var(--yellow)}
+.text-cyan{color:var(--cyan)}.text-muted{color:var(--muted)}.text-white{color:var(--white)}
+.text-center{text-align:center}.fw-bold{font-weight:700}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}
+.mb-8{margin-bottom:8px}.mb-16{margin-bottom:16px}
+.gap-8{gap:8px}.gap-12{gap:12px}
+.flex{display:flex}.flex-center{display:flex;align-items:center}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+</style>
+{% block extra_style %}{% endblock %}
+</head>
+<body>
+{% if session.username %}
+<nav class="navbar">
+  <div class="flex-center gap-8">
+    <div class="nav-logo">Cognitive<span>Shield</span></div>
+    <span class="badge badge-cyan" style="font-size:9px;">v2.0</span>
+  </div>
+  <div class="nav-links">
+    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}">📊 Dashboard</a>
+    <a href="{{ url_for('train_session') }}" class="nav-link {% if 'train' in request.endpoint %}active{% endif %}">🎯 Train</a>
+    <a href="{{ url_for('detect') }}" class="nav-link {% if request.endpoint=='detect' %}active{% endif %}">🔬 Detect</a>
+    <a href="{{ url_for('threat_report') }}" class="nav-link {% if request.endpoint=='threat_report' %}active{% endif %}">📋 Report</a>
+    <a href="{{ url_for('settings') }}" class="nav-link {% if request.endpoint=='settings' %}active{% endif %}">⚙️ Settings</a>
+  </div>
+  <div class="nav-user">
+    <div class="nav-avatar">{{ session.username[0].upper() }}</div>
+    <span>{{ session.username }}</span>
+    <a href="{{ url_for('logout') }}" class="btn btn-ghost btn-sm" style="margin-left:4px;">Logout</a>
+  </div>
+</nav>
+{% endif %}
+{% block content %}{% endblock %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

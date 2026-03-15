@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Detect — CognitiveShield{% endblock %}
+{% block extra_style %}
+<style>
+.risk-gauge{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;flex-direction:column;border:3px solid;margin:0 auto 16px}
+.keyword-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;margin:2px;
+  background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.25)}
+.top-bias-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;margin-bottom:6px}
+.top-bias-row:first-child{background:rgba(255,211,42,.06);border:1px solid rgba(255,211,42,.15)}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container" style="max-width:820px">
+  <div class="page-header">
+    <div class="page-title">🔬 Live Detection Module</div>
+    <div class="page-sub">Paste any suspicious message — the NLP classifier identifies the bias tactic and maps it to MITRE ATT&CK</div>
+  </div>
+
+  {% if has_ollama %}
+  <div class="alert alert-success mb-16">🟢 Ollama local SLM is running — toggle below for richer semantic analysis alongside the ML classifier.</div>
+  {% endif %}
+
+  <div class="grid-2" style="align-items:start">
+    <!-- Input -->
+    <div>
+      <div class="card">
+        <div class="card-title"><span>📥</span> INPUT MESSAGE</div>
+        <form method="POST" id="detectForm">
+          <div class="form-group">
+            <label class="form-label">Message Text</label>
+            <textarea class="form-textarea" name="text" id="textInput"
+              placeholder="Paste an email, SMS, internal chat message or any suspicious text here..."
+              style="min-height:180px">{% if result %}{{ result.text }}{% endif %}</textarea>
+          </div>
+          {% if has_ollama %}
+          <div class="flex-center gap-8 mb-16">
+            <input type="checkbox" name="use_ollama" id="ollamaToggle" style="accent-color:var(--cyan)">
+            <label for="ollamaToggle" style="font-size:11px;color:var(--muted);cursor:pointer">
+              Also analyze with Ollama (local SLM — slower but richer)
+            </label>
+          </div>
+          {% endif %}
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+            🔍 ANALYZE MESSAGE
+          </button>
+        </form>
+      </div>
+
+      <!-- Example messages -->
+      <div class="card mt-16">
+        <div class="card-title"><span>💡</span> TRY AN EXAMPLE</div>
+        {% set examples = [
+          ('authority', 'This is IT Support. Your account has been flagged. Reset your password immediately using the link below or access will be revoked.'),
+          ('urgency', 'URGENT: Your account will be permanently deleted in 2 hours unless you verify your identity now!'),
+          ('fear', 'Warning: We have evidence of illegal activity linked to your account. Respond within 24 hours or face legal action.'),
+          ('social_proof', 'Your entire team has already completed the security verification update. You are the only one who has not.'),
+        ] %}
+        {% for bias, msg in examples %}
+        <button onclick="document.getElementById('textInput').value=`{{ msg }}`"
+          class="btn btn-ghost btn-sm" style="width:100%;justify-content:flex-start;margin-bottom:6px;text-align:left">
+          {{ bias_icons.get(bias,'') }} {{ bias.replace('_',' ').title() }} example
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div>
+      {% if result %}
+      <!-- Risk score -->
+      <div class="card mb-16">
+        <div class="card-title"><span>🎯</span> DETECTION RESULT</div>
+        <div class="risk-gauge" style="border-color:{% if result.risk_score>=70 %}var(--red){% elif result.risk_score>=40 %}var(--yellow){% else %}var(--green){% endif %}">
+          <div style="font-family:var(--display);font-size:1.8rem;font-weight:800;
+            color:{% if result.risk_score>=70 %}var(--red){% elif result.risk_score>=40 %}var(--yellow){% else %}var(--green){% endif %}">
+            {{ result.risk_score|int }}</div>
+          <div class="text-muted" style="font-size:9px">RISK SCORE</div>
+        </div>
+
+        <div class="alert alert-warning text-center mb-16">
+          <strong>Primary Bias:</strong> {{ bias_icons.get(result.primary_bias,'') }}
+          {{ result.primary_bias.replace('_',' ').upper() }} — {{ result.confidence }}% confidence
+        </div>
+
+        <!-- Top biases -->
+        {% for bias, conf in result.top_biases %}
+        <div class="top-bias-row">
+          <div style="width:130px;font-size:11px">{{ bias_icons.get(bias,'•') }} {{ bias.replace('_',' ').title() }}</div>
+          <div style="flex:1"><div class="prog-wrap h-3"><div class="prog-fill h-3 {% if loop.first %}fill-yellow{% else %}fill-cyan{% endif %}" style="width:{{ conf }}%"></div></div></div>
+          <div style="width:38px;text-align:right;font-size:11px;{% if loop.first %}color:var(--yellow);font-weight:700{% else %}color:var(--muted){% endif %}">{{ conf }}%</div>
+        </div>
+        {% endfor %}
+
+        <hr class="divider">
+        <div class="flex-center" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div class="text-muted" style="font-size:9px;letter-spacing:1px">MITRE ATT&CK</div>
+            <div class="text-cyan" style="font-size:11px;margin-top:2px">
+              {{ result.mitre_name }} <span class="badge badge-cyan">{{ result.mitre_id }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size:9px;letter-spacing:1px">IS ATTACK</div>
+            <div style="margin-top:2px">
+              {% if result.risk_score >= 30 %}
+              <span class="badge badge-red">⚠ LIKELY ATTACK</span>
+              {% else %}
+              <span class="badge badge-green">✓ LOW RISK</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if result.risk_keywords %}
+        <hr class="divider">
+        <div class="text-muted" style="font-size:9px;letter-spacing:1px;margin-bottom:6px">RISK KEYWORDS DETECTED</div>
+        {% for kw in result.risk_keywords %}<span class="keyword-tag">{{ kw }}</span>{% endfor %}
+        {% endif %}
+      </div>
+
+      {% if ollama_result %}
+      <div class="card">
+        <div class="card-title"><span>🤖</span> OLLAMA SLM ANALYSIS</div>
+        <div class="alert alert-info mb-8">Bias: <strong>{{ ollama_result.bias_type }}</strong> · Confidence: {{ ollama_result.confidence }}%</div>
+        <p style="font-size:11px;color:var(--white);line-height:1.7">{{ ollama_result.explanation }}</p>
+        {% if ollama_result.red_flags %}
+        <div class="mt-8">
+          <div class="text-muted" style="font-size:9px;margin-bottom:4px">RED FLAGS</div>
+          {% for f in ollama_result.red_flags %}<span class="keyword-tag">{{ f }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="card" style="text-align:center;padding:40px">
+        <div style="font-size:2.5rem;margin-bottom:12px">🔍</div>
+        <p class="text-muted" style="font-size:12px">Paste a message on the left and click Analyze to see results.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

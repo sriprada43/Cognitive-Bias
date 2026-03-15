@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CognitiveShield{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-header flex-center" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Welcome back, {{ username }} · {{ stats.sessions }} sessions completed</div>
+    </div>
+    <div class="flex gap-8">
+      <a href="{{ url_for('train_session') }}" class="btn btn-primary">🎯 Start Training</a>
+      <a href="{{ url_for('threat_report') }}" class="btn btn-outline">📋 Full Report</a>
+    </div>
+  </div>
+
+  <!-- Stat row -->
+  <div class="grid-4 mb-16">
+    <div class="stat-card">
+      <div class="stat-num text-cyan">{{ stats.total_scenarios }}</div>
+      <div class="stat-label">Scenarios</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num {% if report.exploitability>=50 %}text-red{% elif report.exploitability>=30 %}text-yellow{% else %}text-green{% endif %}">{{ report.exploitability|int }}%</div>
+      <div class="stat-label">Exploitability</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num text-yellow">{{ stats.avg_response_time }}s</div>
+      <div class="stat-label">Avg Response</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num text-purple">{{ stats.detections }}</div>
+      <div class="stat-label">Detections Run</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Bias scores -->
+    <div class="card">
+      <div class="card-title"><span>🧠</span> Bias Vulnerability</div>
+      {% for bias in bias_order %}
+        {% set d = stats.bias_scores.get(bias, {}) %}
+        {% set v = d.get('vulnerability', 0) %}
+        <div class="bias-row">
+          <div class="bias-label">{{ bias_icons.get(bias,'') }} {{ bias.replace('_',' ').title() }}</div>
+          <div class="bias-bar">
+            <div class="prog-wrap h-3">
+              <div class="prog-fill h-3 {% if v>=70 %}fill-red{% elif v>=40 %}fill-yellow{% else %}fill-green{% endif %}" style="width:{{ v }}%"></div>
+            </div>
+          </div>
+          <div class="bias-pct {% if v>=70 %}text-red{% elif v>=40 %}text-yellow{% else %}text-green{% endif %}">{{ v|int }}%</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Radar chart -->
+    <div class="card" style="display:flex;flex-direction:column">
+      <div class="card-title"><span>📡</span> Attack Surface Radar</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center">
+        <canvas id="radarChart" style="max-width:260px;max-height:260px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attack surface bars -->
+  <div class="card mt-16">
+    <div class="card-title"><span>🎯</span> Attack Surface Exposure</div>
+    <div class="grid-2">
+      {% for surface, score in report.attack_surface.items() %}
+      <div class="mb-8">
+        <div class="flex-center" style="justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px">{{ surface.replace('_',' ').title() }}</span>
+          <span class="{% if score>=70 %}text-red{% elif score>=40 %}text-yellow{% else %}text-green{% endif %}" style="font-size:11px;font-weight:600">{{ score|int }}%</span>
+        </div>
+        <div class="prog-wrap h-2">
+          <div class="prog-fill h-2 {% if score>=70 %}fill-red{% elif score>=40 %}fill-yellow{% else %}fill-green{% endif %}" style="width:{{ score }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="grid-2 mt-16">
+    <!-- Tips -->
+    <div class="card">
+      <div class="card-title"><span>💡</span> Personalized Defense Tips</div>
+      {% if tips %}
+        {% for tip in tips %}
+        <div class="alert alert-warning mb-8">
+          <strong>{{ bias_icons.get(tip.bias,'') }} {{ tip.bias.replace('_',' ').title() }}</strong> — {{ tip.vulnerability|int }}% vulnerable<br>
+          <span style="color:var(--white)">{{ tip.tip }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted" style="font-size:11px">Complete a training session to receive personalized tips.</p>
+      {% endif %}
+    </div>
+
+    <!-- Quick actions -->
+    <div class="card">
+      <div class="card-title"><span>⚡</span> Quick Actions</div>
+      <a href="{{ url_for('train_session') }}" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:8px">🎯 Start Training Session</a>
+      <a href="{{ url_for('detect') }}" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:8px">🔬 Analyze a Message</a>
+      <a href="{{ url_for('threat_report') }}" class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:8px">📋 View Threat Report</a>
+      <a href="{{ url_for('download_pdf') }}" class="btn btn-ghost" style="width:100%;justify-content:center">📥 Download PDF Report</a>
+      {% if has_ollama %}
+      <div class="alert alert-success mt-8" style="margin-bottom:0">🟢 Ollama detected — local SLM analysis available in Detect tab</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const ctx = document.getElementById('radarChart').getContext('2d');
+new Chart(ctx, {
+  type:'radar',
+  data:{
+    labels:{{ report.attack_surface.keys()|list|tojson }}.map(l=>l.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())),
+    datasets:[{label:'Exposure %',data:{{ report.attack_surface.values()|list|tojson }},
+      backgroundColor:'rgba(0,212,255,.12)',borderColor:'#00d4ff',
+      pointBackgroundColor:'#00d4ff',borderWidth:2}]
+  },
+  options:{scales:{r:{min:0,max:100,
+    ticks:{color:'#5a7090',stepSize:25,font:{size:9,family:'JetBrains Mono'}},
+    grid:{color:'#1a2535'},pointLabels:{color:'#e8f0fe',font:{size:10,family:'JetBrains Mono'}}}},
+    plugins:{legend:{display:false}}}
+});
+</script>
+{% endblock %}
